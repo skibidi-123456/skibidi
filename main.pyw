@@ -276,7 +276,7 @@ async def on_ready():
             if len(parts) < 2:
                 return False
             timestamp = int(parts[1])
-            return time.time() - timestamp < UPDATE_INTERVAL * 1.5
+            return time.time() - timestamp < UPDATE_INTERVAL
         except:
             return False
 

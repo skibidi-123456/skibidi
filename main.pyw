@@ -280,10 +280,9 @@ async def on_ready():
         except:
             return False
 
-        
+    cleanup_old_messages.start()
     send_status.start()
     update_activity.start()
-    cleanup_old_messages.start()
 
 
 

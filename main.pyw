@@ -216,13 +216,12 @@ async def on_ready():
                 if channel:
                     await channel.send(embed=embed)
 
-    send_status.start()  # Start updating instance messages
-    update_activity.start()  # Start updating presence
-    cleanup_old_messages.start()  # Start removing outdated messages
+    send_status.start()
+    update_activity.start()
+    cleanup_old_messages.start()
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def send_status():
-        """Sends a UUID message and deletes the previous one."""
         global last_message
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
@@ -231,22 +230,21 @@ async def on_ready():
 
         try:
             if last_message:
-                await last_message.delete()  # Delete the old message
-            last_message = await channel.send(f"{INSTANCE_ID} | {int(time.time())}")  # Send new message
+                await last_message.delete()
+            last_message = await channel.send(f"{INSTANCE_ID} | {int(time.time())}")
         except Exception as e:
             print(f"Error sending status: {e}")
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def update_activity():
-        """Counts active messages in the channel to update the bot's presence."""
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
             print("Channel not found!")
             return
 
         try:
-            messages = await channel.history(limit=100).flatten()  # Fetch recent messages
-            count = sum(1 for msg in messages if is_message_valid(msg))  # Count valid messages
+            messages = await channel.history(limit=100).flatten()
+            count = sum(1 for msg in messages if is_message_valid(msg))
             activity = nextcord.Game(f"Running on {count} instances")
             await client.change_presence(activity=activity)
         except Exception as e:
@@ -263,21 +261,20 @@ async def on_ready():
         try:
             messages = await channel.history(limit=100).flatten()
             for msg in messages:
-                if not is_message_valid(msg):  # If message is outdated, delete it
+                if not is_message_valid(msg):
                     await msg.delete()
         except Exception as e:
             print(f"Error cleaning messages: {e}")
 
     def is_message_valid(message):
-        """Checks if a message is still valid based on its timestamp."""
         try:
             parts = message.content.split(" | ")
             if len(parts) < 2:
                 return False
-            timestamp = int(parts[1])  # Extract timestamp
-            return time.time() - timestamp < UPDATE_INTERVAL * 1.5  # Allow slight buffer
+            timestamp = int(parts[1])
+            return time.time() - timestamp < UPDATE_INTERVAL * 1.5
         except:
-            return False  # Invalid message format
+            return False
 
 
 

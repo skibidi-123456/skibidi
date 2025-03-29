@@ -305,7 +305,7 @@ time.sleep(1)
 
 user_profile = os.environ['USERPROFILE']
 target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
-shutil.rmtree(os.path.join(target_path, "RemoteControl-startup"))
+shutil.rmtree(os.path.join(target_path, "skibidi-startup"))
 shutil.rmtree(os.path.join(target_path, "skibidi-main"))
 startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
 shortcut_name="MyPythonScript"
@@ -363,7 +363,7 @@ time.sleep(1)
 
 user_profile = os.environ['USERPROFILE']
 target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
-shutil.rmtree(os.path.join(target_path, "RemoteControl-startup"))
+shutil.rmtree(os.path.join(target_path, "skibidi-startup"))
 shutil.rmtree(os.path.join(target_path, "skibidi-main"))
 startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
 shortcut_name="MyPythonScript"

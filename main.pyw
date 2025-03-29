@@ -224,7 +224,7 @@ async def on_ready():
     async def send_status():
         """Sends a UUID message and deletes the previous one."""
         global last_message
-        channel = bot.get_channel(CHANNEL_ID)
+        channel = client.get_channel(CHANNEL_ID)
         if not channel:
             print("Channel not found!")
             return
@@ -239,7 +239,7 @@ async def on_ready():
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def update_activity():
         """Counts active messages in the channel to update the bot's presence."""
-        channel = bot.get_channel(CHANNEL_ID)
+        channel = client.get_channel(CHANNEL_ID)
         if not channel:
             print("Channel not found!")
             return
@@ -248,14 +248,14 @@ async def on_ready():
             messages = await channel.history(limit=100).flatten()  # Fetch recent messages
             count = sum(1 for msg in messages if is_message_valid(msg))  # Count valid messages
             activity = nextcord.Game(f"Running on {count} instances")
-            await bot.change_presence(activity=activity)
+            await client.change_presence(activity=activity)
         except Exception as e:
             print(f"Error updating activity: {e}")
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def cleanup_old_messages():
         """Deletes messages that are too old."""
-        channel = bot.get_channel(CHANNEL_ID)
+        channel = client.get_channel(CHANNEL_ID)
         if not channel:
             print("Channel not found!")
             return
@@ -278,7 +278,6 @@ async def on_ready():
             return time.time() - timestamp < UPDATE_INTERVAL * 1.5  # Allow slight buffer
         except:
             return False  # Invalid message format
-            await update_instances(instances)
 
 
 

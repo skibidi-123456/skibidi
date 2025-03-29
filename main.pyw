@@ -218,16 +218,21 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def send_status():
-        global last_message
+        global last_message_id
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
-            print("Channel not found!")
             return
 
         try:
-            if last_message:
-                await last_message.delete()
-            last_message = await channel.send(f"{INSTANCE_ID} | {int(time.time())}")
+            if last_message_id:
+                try:
+                    msg = await channel.fetch_message(last_message_id)
+                    await msg.delete()
+                except nextcord.NotFound:
+                    pass
+
+            new_message = await channel.send(f"{INSTANCE_ID} | {int(time.time())}")
+            last_message_id = new_message.id
         except Exception as e:
             print(f"Error sending status: {e}")
 
@@ -235,12 +240,14 @@ async def on_ready():
     async def update_activity():
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
-            print("Channel not found!")
             return
 
         try:
-            messages = await channel.history(limit=100).flatten()
-            count = sum(1 for msg in messages if is_message_valid(msg))
+            count = 0
+            async for msg in channel.history(limit=100):
+                if is_message_valid(msg):
+                    count += 1
+
             activity = nextcord.Game(f"Running on {count} instances")
             await client.change_presence(activity=activity)
         except Exception as e:
@@ -248,17 +255,17 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def cleanup_old_messages():
-        """Deletes messages that are too old."""
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
-            print("Channel not found!")
             return
 
         try:
-            messages = await channel.history(limit=100).flatten()
-            for msg in messages:
+            async for msg in channel.history(limit=100):
                 if not is_message_valid(msg):
-                    await msg.delete()
+                    try:
+                        await msg.delete()
+                    except nextcord.NotFound:
+                        pass
         except Exception as e:
             print(f"Error cleaning messages: {e}")
 
@@ -271,6 +278,7 @@ async def on_ready():
             return time.time() - timestamp < UPDATE_INTERVAL * 1.5
         except:
             return False
+
         
     send_status.start()
     update_activity.start()

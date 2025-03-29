@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 user_profile = os.environ['USERPROFILE']
-target_path = os.path.join(user_profile, 'AppData', 'Roaming', 'Microsoft', 'Windows')
+target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
 os.makedirs(target_path, exist_ok=True)
 
 required_packages = [

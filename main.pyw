@@ -281,7 +281,9 @@ async def on_ready():
             return False
 
     cleanup_old_messages.start()
+    await asyncio.sleep(1)
     send_status.start()
+    await asyncio.sleep(1)
     update_activity.start()
 
 

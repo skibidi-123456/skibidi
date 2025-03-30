@@ -104,71 +104,90 @@ def get_device_ip():
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
 
 class FileView(nextcord.ui.View):
-    def __init__(self, current_path, history):
+    def __init__(self, current_path, history, page=0):
         super().__init__()
         self.current_path = current_path
         self.history = history
+        self.page = page
 
         contents = self.get_contents()
-        for name, is_dir in contents:
-            if is_dir:
-                style = nextcord.ButtonStyle.primary
-                custom_id = f"dir:{name}"
-            else:
-                style = nextcord.ButtonStyle.secondary
-                custom_id = f"file:{name}"
+        total_items = len(contents)
+        max_per_page = 21
+
+        start_index = self.page * max_per_page
+        end_index = start_index + max_per_page
+        current_page_items = contents[start_index:end_index]
+
+        for name, is_dir in current_page_items:
+            style = nextcord.ButtonStyle.primary if is_dir else nextcord.ButtonStyle.secondary
+            custom_id = f"dir:{name}" if is_dir else f"file:{name}"
             button = nextcord.ui.Button(label=name, style=style, custom_id=custom_id)
-            button.callback = self.create_callback(button.custom_id)
+            button.callback = self.create_callback(custom_id)
             self.add_item(button)
 
-        if self.history:
-            back_button = nextcord.ui.Button(label="Back", style=nextcord.ButtonStyle.red)
-            back_button.callback = self.back
-            self.add_item(back_button)
+        if self.page > 0:
+            up_btn = nextcord.ui.Button(emoji="⬆️", style=nextcord.ButtonStyle.grey)
+            up_btn.callback = self.prev_page
+            self.add_item(up_btn)
+        
+        if total_items > end_index:
+            down_btn = nextcord.ui.Button(emoji="⬇️", style=nextcord.ButtonStyle.grey)
+            down_btn.callback = self.next_page
+            self.add_item(down_btn)
 
-        close_button = nextcord.ui.Button(label="Close", style=nextcord.ButtonStyle.red)
-        close_button.callback = self.close
-        self.add_item(close_button)
+        if self.history:
+            back_btn = nextcord.ui.Button(label="Back", style=nextcord.ButtonStyle.red)
+            back_btn.callback = self.back
+            self.add_item(back_btn)
+
+        close_btn = nextcord.ui.Button(label="Close", style=nextcord.ButtonStyle.red)
+        close_btn.callback = self.close
+        self.add_item(close_btn)
 
     def get_contents(self):
         if self.current_path is None:
             if os.name == 'nt':
-                return [(f"{d}:\\", True) for d in string.ascii_uppercase if os.path.exists(f"{d}:")]
-            else:
-                return []
-        else:
-            try:
-                items = []
-                for item in os.listdir(self.current_path):
-                    path = os.path.join(self.current_path, item)
-                    items.append((item, os.path.isdir(path)))
-                return items
-            except:
-                return []
+                return sorted([(f"{d}:\\", True) for d in string.ascii_uppercase if os.path.exists(f"{d}:")], key=lambda x: x[0])
+            return []
+        try:
+            items = []
+            for item in os.listdir(self.current_path):
+                path = os.path.join(self.current_path, item)
+                items.append((item, os.path.isdir(path)))
+            return sorted(items, key=lambda x: (not x[1], x[0]))
+        except:
+            return []
 
     def create_callback(self, custom_id):
         async def callback(interaction):
             if custom_id.startswith("dir:"):
                 dir_name = custom_id.split(":", 1)[1]
                 new_path = os.path.join(self.current_path, dir_name) if self.current_path else dir_name
-                new_history = self.history + [self.current_path]
+                new_history = self.history + [(self.current_path, self.page)]
                 view = FileView(new_path, new_history)
                 await interaction.response.edit_message(content=f"Path: {new_path}", view=view)
             elif custom_id.startswith("file:"):
                 file_name = custom_id.split(":", 1)[1]
-                file_path = os.path.join(self.current_path, file_name) if self.current_path else file_name
+                file_path = os.path.join(self.current_path, file_name)
                 if os.path.isfile(file_path):
                     await interaction.response.send_message(file=nextcord.File(file_path))
                 else:
-                    await interaction.response.send_message("File not found.", ephemeral=True)
+                    await interaction.response.send_message("File not found", ephemeral=True)
         return callback
+
+    async def prev_page(self, interaction):
+        view = FileView(self.current_path, self.history, self.page - 1)
+        await interaction.response.edit_message(content=f"Path: {self.current_path}", view=view)
+
+    async def next_page(self, interaction):
+        view = FileView(self.current_path, self.history, self.page + 1)
+        await interaction.response.edit_message(content=f"Path: {self.current_path}", view=view)
 
     async def back(self, interaction):
         if self.history:
-            new_path = self.history[-1]
-            new_history = self.history[:-1]
-            view = FileView(new_path, new_history)
-            await interaction.response.edit_message(content=f"Path: {new_path}", view=view)
+            prev_path, prev_page = self.history[-1]
+            view = FileView(prev_path, self.history[:-1], prev_page)
+            await interaction.response.edit_message(content=f"Path: {prev_path}", view=view)
         else:
             await interaction.response.defer()
 

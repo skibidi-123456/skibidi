@@ -665,7 +665,7 @@ async def output_log(interaction : Interaction):
         await interaction.send(file=file1)
         print("Log file sent")
 
-@client.slash_command()
+@client.slash_command(guild_ids=testServerId, description="Opens a file browser for client's computer.")
 async def browse(interaction: nextcord.Interaction):
     initial_path = None if os.name == 'nt' else '/'
     view = FileView(initial_path, [])

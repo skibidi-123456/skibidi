@@ -110,55 +110,6 @@ class FileOptionsView(nextcord.ui.View):
         self.current_path = current_path
         self.history = history
         
-        file_size = os.path.getsize(file_path) / (1024 * 1024)
-        self.add_item(nextcord.ui.Button(label=f"Selected: {os.path.basename(file_path)}", disabled=True))
-        
-        send_btn = nextcord.ui.Button(label="Send", style=nextcord.ButtonStyle.green)
-        send_btn.disabled = file_size >= 10
-        send_btn.callback = self.send_file
-        self.add_item(send_btn)
-        
-        delete_btn = nextcord.ui.Button(label="Delete", style=nextcord.ButtonStyle.danger)
-        delete_btn.callback = self.delete_file
-        self.add_item(delete_btn)
-        
-        back_btn = nextcord.ui.Button(label="Back", style=nextcord.ButtonStyle.blurple)
-        back_btn.callback = self.go_back
-        self.add_item(back_btn)
-        
-        close_btn = nextcord.ui.Button(label="Close", style=nextcord.ButtonStyle.grey)
-        close_btn.callback = self.close
-        self.add_item(close_btn)
-
-    async def send_file(self, interaction):
-        try:
-            await interaction.channel.send(file=nextcord.File(self.file_path))
-            await interaction.response.edit_message(content="✅ File sent!", view=None)
-        except:
-            await interaction.response.edit_message(content="❌ Failed to send file!", view=None)
-
-    async def delete_file(self, interaction):
-        try:
-            os.remove(self.file_path)
-            await interaction.response.edit_message(content="🗑️ File deleted!", view=None)
-        except:
-            await interaction.response.edit_message(content="❌ Delete failed!", view=None)
-
-    async def go_back(self, interaction):
-        view = FileView(self.current_path, self.history)
-        await interaction.response.edit_message(content=f"Path: {self.current_path}", view=view)
-
-    async def close(self, interaction):
-        await interaction.message.delete()
-        self.stop()
-
-class FileOptionsView(nextcord.ui.View):
-    def __init__(self, file_path, current_path, history):
-        super().__init__()
-        self.file_path = file_path
-        self.current_path = current_path
-        self.history = history
-        
         self.add_item(nextcord.ui.Button(label=f"Selected: {os.path.basename(file_path)}", disabled=True))
         
         send_btn = nextcord.ui.Button(label="Send", style=nextcord.ButtonStyle.green)

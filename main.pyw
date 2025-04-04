@@ -741,7 +741,7 @@ async def browse(interaction: nextcord.Interaction):
         view = FileView(initial_path, [])
         await interaction.response.send_message("Browse files:", view=view)
 
-@client.slash_command(name="upload", description="Start file upload process")
+@client.slash_command(guild_ids=testServerId, name="upload", description="Start file upload process")
 async def upload_command(
     interaction: Interaction,
     directory: str = nextcord.SlashOption(description="Absolute target directory path")

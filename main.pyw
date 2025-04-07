@@ -750,7 +750,6 @@ async def jumpscare(interaction: nextcord.Interaction):
             return
         print("Jumpscare command received")
         print("Activating jumpscare...")
-        global jumpscaring
         jumpscaring = True
         n = 10
         while not n == 0:
@@ -798,7 +797,6 @@ async def jumpscare(interaction: nextcord.Interaction):
 async def on_message(message):
 
     if jumpscaring:
-        global jumpscaring
         jumpscaring = False
 
 print("Getting token")

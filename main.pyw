@@ -766,6 +766,7 @@ async def jumpscare(interaction: nextcord.Interaction):
         await interaction.edit_original_message(content="Jumpscare activated!, sending jumpscare...")
         img = cv2.imread("jumpscare/jumpscare.png")
         print("Opening jumpscare image...")
+        cv2.namedWindow("Jumpscare", cv2.WND_PROP_FULLSCREEN)
         cv2.imshow("Jumpscare", img)
         print("Jumpscare image opened")
         print("Playing jumpscare sound...")

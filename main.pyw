@@ -53,13 +53,13 @@ jumpscaring = False
 
 def show_fullscreen_jumpscare():
     root = tk.Tk()
-    root.title("Jumpscare")
+    root.title("")
 
     root.attributes("-fullscreen", True)
     root.attributes("-topmost", True)
     root.configure(bg='black')
 
-    image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jumpscare', 'jumpscare.png')
+    image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jumpscare', 'jumpscare.jpg')
     img = Image.open(image_path)
 
     screen_width = root.winfo_screenwidth()

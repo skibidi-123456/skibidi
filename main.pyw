@@ -802,7 +802,6 @@ async def jumpscare(interaction: nextcord.Interaction):
         show_fullscreen_jumpscare()
         print("Jumpscare image opened")
         print("Playing jumpscare sound...")
-        play_sound()
         print("Taking screenshot...")
         await interaction.edit_original_message(content="Jumpscare activated!, taking screenshot...")
 

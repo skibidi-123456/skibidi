@@ -286,7 +286,7 @@ path_to_cursor = os.path.join(target_path, 'skibidi-main', 'cursor', 'cursor.png
 cursor_image = Image.open(path_to_cursor)
 cursor_width, cursor_height = 16, 16
 
-with open(os.path.join(target_path, "skibidi-main", "update.txt")) as ver9:
+with open(os.path.join(target_path, "skibidi-main", "ver.txt")) as ver9:
     ver8 = ver9.read()
     ver9.close()
 

@@ -79,7 +79,7 @@ def show_fullscreen_jumpscare():
     pygame.mixer.music.load(audio_path)
     pygame.mixer.music.play()
 
-    root.after(1000, root.destroy)
+    root.after(1500, root.destroy)
 
     root.mainloop()
 

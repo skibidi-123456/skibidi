@@ -791,7 +791,7 @@ async def jumpscare(interaction: nextcord.Interaction):
         print("Activating jumpscare...")
         global jumpscaring
         jumpscaring = True
-        n = 10
+        n = 3
         await interaction.response.send_message(f"Starting {n} second jumpscare countdown...")
         await asyncio.sleep(1)
         while not n == 0:

@@ -78,7 +78,7 @@ def play_sound():
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    audio_path = os.path.join(script_dir, 'audio', 'sound.mp3')
+    audio_path = os.path.join(script_dir, 'jumpscare', 'jumpscare.mp3')
     pygame.mixer.init()
     pygame.mixer.music.load(audio_path)
     pygame.mixer.music.play()

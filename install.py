@@ -13,7 +13,8 @@ os.makedirs(target_path, exist_ok=True)
 required_packages = [
     'flask', 'flask-socketio', 'opencv-python-headless', 'numpy', 'mss',
     'pyautogui', 'Pillow', 'nextcord', 'requests',
-    'keyboard', 'python-dateutil', 'pywin32', 'pypiwin32', "pyngrok"
+    'keyboard', 'python-dateutil', 'pywin32', 'pypiwin32', "pyngrok", 'pynput',
+    'pygame'
 ]
 
 required_package = [

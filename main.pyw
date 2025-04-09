@@ -438,7 +438,6 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def send_status():
-        print("Sending status...")
         global last_message_id
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
@@ -459,7 +458,6 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def update_activity():
-        print("Updating activity...")
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
             return
@@ -477,7 +475,6 @@ async def on_ready():
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def cleanup_old_messages():
-        print("Cleaning up old messages...")
         channel = client.get_channel(CHANNEL_ID)
         if not channel:
             return

